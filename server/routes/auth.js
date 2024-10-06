@@ -1,27 +1,29 @@
+// routes/auth.js
+
 const express = require('express');
+const router = express.Router();
+const User = require('../Models/User'); 
 const bcrypt = require('bcrypt');
-const User= require('../Models/User');
+const jwt = require('jsonwebtoken');
 
-const router = express.Router(); // Define the router here
-
-// Registration route
+// Register Route
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
     try {
+        // Check if user already exists
         const existingUser = await User.findOne({ username });
         if (existingUser) {
-            return res.status(400).json({ error: 'Username already exists' });
+            return res.status(400).json({ error: 'User already exists' });
         }
 
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) {
-            return res.status(400).json({ error: 'Email already exists' });
-        }
-
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Create a new user
         const user = new User({ username, email, password: hashedPassword });
         await user.save();
+        
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error('Registration error:', error);
@@ -29,16 +31,18 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Login route
+// Login Route
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
+        // Find the user by username
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(400).json({ error: 'Invalid credentials' });
         }
 
+        // Check if password matches
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({ error: 'Invalid credentials' });
@@ -53,4 +57,4 @@ router.post('/login', async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = router; // Use module.exports for CommonJS
