@@ -1,19 +1,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const cors = require('cors');
-const authRoutes = require('./routes/auth'); // Use CommonJS require
+const cors = require('cors'); 
+const authRoutes = require('./routes/auth');
 
-dotenv.config(); // Load environment variables
+dotenv.config(); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json()); // Parse JSON bodies
+// Middleware to parse JSON
+app.use(express.json());
 
-// Log the MongoDB URI
+// Enable CORS
+app.use(cors());
+
 console.log('MongoDB URI:', process.env.MONGO_URI);
 
 // MongoDB connection
@@ -26,6 +27,11 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Welcome route
+app.get('/', (req, res) => {
+    res.send('Welcome to the Authentication API');
+});
 
 // Start the server
 app.listen(PORT, () => {
