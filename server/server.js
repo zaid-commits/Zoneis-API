@@ -1,11 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const cors = require('cors'); 
-const authRoutes = require('./routes/auth'); 
+const cors = require('cors');
+const authRoutes = require('./routes/auth');
+const formRoutes = require('./routes/form'); // Import form routes
+const errorHandler = require('./middleware/errorHandler'); // Import error handler
 
-// fetch resorouces from dotenv file
-dotenv.config(); 
+dotenv.config(); // Load environment variables from .env file
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,15 +25,22 @@ mongoose.connect(process.env.MONGO_URI, {
     useUnifiedTopology: true,
 })
     .then(() => console.log('MongoDB connected'))
-    .catch((error) => console.error('MongoDB connection error:', error));
+    .catch((error) => {
+        console.error('MongoDB connection error:', error);
+        process.exit(1); // Exit process with failure
+    });
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/form', formRoutes); // Use form routes
 
 // Welcome route
 app.get('/', (req, res) => {
     res.send('Welcome to the Authentication API');
 });
+
+// Use the error handler middleware
+app.use(errorHandler);
 
 // Start the server
 app.listen(PORT, () => {
