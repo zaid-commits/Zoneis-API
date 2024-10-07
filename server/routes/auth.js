@@ -1,8 +1,8 @@
-const express = require('express');
-const { check, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User= require('../models/User.js');
+import express from 'express';
+import { check, validationResult } from 'express-validator';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User from '../models/user';
 const router = express.Router();
 
 
