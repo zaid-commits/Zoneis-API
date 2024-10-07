@@ -1,6 +1,6 @@
 const express = require('express');
 const { check, validationResult } = require('express-validator');
-const formData = require('../../models/FormData');
+const formData = require('../../models/formData');
 const router = express.Router();
 
 // Handle form submission
