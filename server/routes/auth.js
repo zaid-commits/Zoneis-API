@@ -2,12 +2,13 @@ const express = require('express');
 const { check, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User=require('../models/user');
+const user= require('../models/user');
 const router = express.Router();
+
 
 // Register a new user
 router.post('/register', [
-    check('username', 'Username is required').not().isEmpty(),
+    check('username', 'username is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
     check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
 ], async (req, res) => {
@@ -19,13 +20,13 @@ router.post('/register', [
     const { username, email, password } = req.body;
 
     try {
-        let user = await User.findOne({ email });
+        let user = await user.findOne({ email });
 
         if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
+            return res.status(400).json({ msg: 'user already exists' });
         }
 
-        user = new User({
+        user = new user({
             username,
             email,
             password // Store plain text password for debugging
@@ -70,7 +71,7 @@ router.post('/login', [
     const { email, password } = req.body;
 
     try {
-        let user = await User.findOne({ email });
+        let user = await user.findOne({ email });
 
         if (!user) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
