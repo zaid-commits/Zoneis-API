@@ -4,7 +4,6 @@ const User= require('../Models/User.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Register route
 router.post('/register', async (req, res) => {
     try {
         const { Username, email, password } = req.body;
@@ -13,16 +12,16 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        //existing user
+        // Existing user
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // password hashing
+        // Password hashing
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // new User
+        // New User
         const newUser = new User({
             Username,
             email,
@@ -32,7 +31,7 @@ router.post('/register', async (req, res) => {
         // Save User to database
         await newUser.save();
 
-        // new JWT token login
+        // New JWT token login
         const token = jwt.sign({ UserId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(201).json({ 
@@ -56,19 +55,19 @@ router.post('/login', async (req, res) => {
         }
 
         // Check if User exists
-        const User = await User.findOne({ email });
-        if (!User) {
+        const foundUser = await User.findOne({ email }); // Change here
+        if (!foundUser) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         // Check password
-        const isMatch = await bcrypt.compare(password, User.password);
+        const isMatch = await bcrypt.compare(password, foundUser.password); // Change here
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         // Generate JWT token
-        const payload = { UserId: User._id };
+        const payload = { UserId: foundUser._id }; // Change here
         jwt.sign(
             payload,
             process.env.JWT_SECRET,
@@ -77,7 +76,7 @@ router.post('/login', async (req, res) => {
                 if (err) throw err;
                 res.json({ 
                     token,
-                    message: `Welcome back, ${User.Username}!`
+                    message: `Welcome back, ${foundUser.Username}!` // Change here
                 });
             }
         );
@@ -86,5 +85,7 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ msg: 'Server error. Please try again later.' });
     }
 });
+
+module.exports = router;
 
 module.exports = router;
