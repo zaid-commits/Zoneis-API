@@ -1,49 +1,43 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const cors = require('cors');
-const helmet = require('helmet'); // Security middleware
-const compression = require('compression'); // Compression middleware
-const path = require('path');
+const helmet = require('helmet');
+const compression = require('compression');
+const dotenv = require('dotenv');
+const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/auth');
-const formRoutes = require('./routes/form'); // Import form routes
-const errorHandler = require('./middleware/errorHandler'); // Import error handler
+const formRoutes = require('./routes/form');
 
-dotenv.config(); // Load environment variables from .env file
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON
+// Middleware
 app.use(express.json());
-
-// Enable CORS for your frontend URL
-app.use(cors({
-    origin: 'https://zoneis.vercel.app',
-    optionsSuccessStatus: 200
-}));
-
-// Security middleware
+app.use(cors());
 app.use(helmet());
-
-// Compression middleware
 app.use(compression());
-
-console.log('MongoDB URI:', process.env.MONGO_URI);
-
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch((error) => {
-        console.error('MongoDB connection error:', error);
-        process.exit(1); // Exit process with failure
-    });
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/form', formRoutes); // Use form routes
+app.use('/api/form', formRoutes);
 
-// Welcome route
+// Connect to MongoDB
+const mongoURI = process.env.MONGO_URI;
+console.log('MongoDB URI:', mongoURI);
+
+mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('MongoDB connected');
+}).catch((err) => {
+    console.error('MongoDB connection error:', err);
+});
+
+// Root route
 app.get('/', (req, res) => {
     res.send('Welcome to the Authentication API');
 });
