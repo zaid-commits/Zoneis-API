@@ -1,93 +1,75 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
+const router = express.Router();
+const User = require('../models/User'); // Assuming you have a User model
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-const router = express.Router();
 
-// Register a new User
-router.post('/register', [
-    check('Username', 'Username is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
-], async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { Username, email, password } = req.body;
-
+// Register route
+router.post('/register', async (req, res) => {
     try {
-        let user = await User.findOne({ email });
+        const { username, email, password } = req.body;
 
-        if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
+        // Validate request payload
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
 
-        user = new User({
-            Username,
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const newUser = new User({
+            username,
             email,
-            password // Store plain text password for debugging
+            password: hashedPassword
         });
 
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
+        // Save user to database
+        await newUser.save();
 
-        await user.save();
+        // Generate JWT token
+        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        const payload = {
-            user: {
-                id: user.id
-            }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token, message: 'Registration successful!' });
-            }
-        );
-    } catch (err) {
-        console.error('Registration error:', err.message);
-        res.status(500).json({ msg: 'Server error. Please try again later.' });
+        res.status(201).json({ 
+            token,
+            message: 'User registered successfully!' // Add success message
+        });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Login a User
-router.post('/login', [
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Password is required').exists()
-], async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
-
+// Login route
+router.post('/login', async (req, res) => {
     try {
-        let user = await User.findOne({ email });
+        const { email, password } = req.body;
 
+        // Validate request payload
+        if (!email || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        // Check password
         const isMatch = await bcrypt.compare(password, user.password);
-
         if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const payload = {
-            user: {
-                id: user.id
-            }
-        };
-
+        // Generate JWT token
+        const payload = { userId: user._id };
         jwt.sign(
             payload,
             process.env.JWT_SECRET,
@@ -96,7 +78,7 @@ router.post('/login', [
                 if (err) throw err;
                 res.json({ 
                     token,
-                    message: `Welcome back, ${user.Username}!` // Add welcome message
+                    message: `Welcome back, ${user.username}!` // Add welcome message
                 });
             }
         );

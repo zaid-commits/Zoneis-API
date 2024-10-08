@@ -19,7 +19,7 @@ app.use(express.json());
 
 // Enable CORS for your frontend URL
 app.use(cors({
-    origin: 'https://zoneis.vercel.app',
+    origin: 'http://localhost:5173', // Update this to your frontend URL
     optionsSuccessStatus: 200
 }));
 
@@ -32,15 +32,18 @@ app.use(compression());
 console.log('MongoDB URI:', process.env.MONGO_URI);
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connected'))
     .catch((error) => {
         console.error('MongoDB connection error:', error);
         process.exit(1); // Exit process with failure
     });
+
+// Log incoming requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`, req.body);
+    next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
