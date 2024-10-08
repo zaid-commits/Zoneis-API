@@ -28,10 +28,7 @@ app.use('/api/form', formRoutes);
 const mongoURI = process.env.MONGO_URI;
 console.log('MongoDB URI:', mongoURI);
 
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
+mongoose.connect(mongoURI).then(() => {
     console.log('MongoDB connected');
 }).catch((err) => {
     console.error('MongoDB connection error:', err);
