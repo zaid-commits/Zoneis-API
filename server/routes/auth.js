@@ -1,10 +1,9 @@
-import express from 'express';
-import { check, validationResult } from 'express-validator';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/user';
+const express = require('express');
+const { check, validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const router = express.Router();
-
 
 // Register a new User
 router.post('/register', [
@@ -20,26 +19,26 @@ router.post('/register', [
     const { Username, email, password } = req.body;
 
     try {
-        let User = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
-        if (User) {
+        if (user) {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
-        User = new User({
+        user = new User({
             Username,
             email,
             password // Store plain text password for debugging
         });
 
         const salt = await bcrypt.genSalt(10);
-        User.password = await bcrypt.hash(password, salt);
+        user.password = await bcrypt.hash(password, salt);
 
-        await User.save();
+        await user.save();
 
         const payload = {
-            User: {
-                id: User.id
+            user: {
+                id: user.id
             }
         };
 
@@ -71,21 +70,21 @@ router.post('/login', [
     const { email, password } = req.body;
 
     try {
-        let User = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
-        if (!User) {
+        if (!user) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        const isMatch = await bcrypt.compare(password, User.password);
+        const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
         const payload = {
-            User: {
-                id: User.id
+            user: {
+                id: user.id
             }
         };
 
@@ -97,7 +96,7 @@ router.post('/login', [
                 if (err) throw err;
                 res.json({ 
                     token,
-                    message: `Welcome back, ${User.Username}!` // Add welcome message
+                    message: `Welcome back, ${user.Username}!` // Add welcome message
                 });
             }
         );
