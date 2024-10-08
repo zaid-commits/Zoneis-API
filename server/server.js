@@ -19,7 +19,7 @@ app.use(express.json());
 
 // Enable CORS for your frontend URL
 app.use(cors({
-    origin: 'http://localhost:5173', // Update this to your frontend URL
+    origin: 'https://zoneis.vercel.app', // Update this to your frontend URL
     optionsSuccessStatus: 200
 }));
 
