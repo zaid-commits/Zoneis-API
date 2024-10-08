@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Ensure this path is correct
+const User= require('../models/customer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
