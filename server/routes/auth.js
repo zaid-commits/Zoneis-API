@@ -9,21 +9,20 @@ router.post('/register', async (req, res) => {
     try {
         const { Username, email, password } = req.body;
 
-        // Validate request payload
         if (!Username || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check if User already exists
+        //existing user
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Hash password
+        // password hashing
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create new User
+        // new User
         const newUser = new User({
             Username,
             email,
@@ -33,7 +32,7 @@ router.post('/register', async (req, res) => {
         // Save User to database
         await newUser.save();
 
-        // Generate JWT token
+        // new JWT token login
         const token = jwt.sign({ UserId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(201).json({ 
