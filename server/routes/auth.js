@@ -6,13 +6,13 @@ const jwt = require('jsonwebtoken');
 
 router.post('/register', async (req, res) => {
     try {
-        const { Username, email, password } = req.body;
+        const { Username, email, password } = req.body; // Ensure these keys match your frontend
 
         if (!Username || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Existing user
+        // Check for existing user
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
@@ -31,7 +31,7 @@ router.post('/register', async (req, res) => {
         // Save User to database
         await newUser.save();
 
-        // New JWT token login
+        // Generate JWT token
         const token = jwt.sign({ UserId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(201).json({ 
