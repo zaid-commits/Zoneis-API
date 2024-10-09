@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const FormData = require('../Models/FormData.js'); // Ensure this path is correct
+const FormData = require('../Models/FormData.js'); 
 
 // Handle form submission
 router.post('/submit', async (req, res) => {

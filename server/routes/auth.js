@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../Models/User'); // Ensure this path is correct and consistent
+const User = require('../Models/User'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -91,7 +91,7 @@ router.post('/login', async (req, res) => {
 // Get all users route
 router.get('/users', async (req, res) => {
     try {
-        const users = await User.find(); // Include password field
+        const users = await User.find(); 
         res.json(users);
     } catch (error) {
         console.error('Error fetching users:', error);
