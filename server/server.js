@@ -2,24 +2,24 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const helmet = require('helmet'); // Security middleware
-const compression = require('compression'); // Compression middleware
+const helmet = require('helmet'); 
+const compression = require('compression'); 
 const path = require('path');
 const authRoutes = require('./routes/auth');
-const formRoutes = require('./routes/form'); // Import form routes
-const errorHandler = require('./middleware/errorHandler'); // Import error handler
+const formRoutes = require('./routes/form'); 
+const errorHandler = require('./middleware/errorHandler');
 
 dotenv.config(); // Load environment variables from .env file
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON
+// Middleware
 app.use(express.json());
 
-// Enable CORS for your frontend URL
+// CORS for corss origin 
 app.use(cors({
-    origin: 'https://zoneis.vercel.app', // Update this to your frontend URL
+    origin: 'https://zoneis.vercel.app', 
     optionsSuccessStatus: 200
 }));
 
@@ -36,7 +36,7 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connected'))
     .catch((error) => {
         console.error('MongoDB connection error:', error);
-        process.exit(1); // Exit process with failure
+        process.exit(1); 
     });
 
 // Log incoming requests
@@ -47,14 +47,13 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/form', formRoutes); // Use form routes
+app.use('/api/form', formRoutes); 
 
 // Welcome route
 app.get('/', (req, res) => {
-    res.send('Welcome to the Authentication API');
+    res.send('Fitness API');
 });
 
-// Use the error handler middleware
 app.use(errorHandler);
 
 // Start the server

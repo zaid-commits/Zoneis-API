@@ -1,25 +1,19 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
-const FormData = require('../Models/FormData.js'); // Ensure the path is correct
 const router = express.Router();
+const FormData = require('../Models/FormData.js'); // Ensure this path is correct
 
 // Handle form submission
-router.post('/submit', [
-    check('name', 'Name is required').not().isEmpty(),
-    check('age', 'Age is required').isInt({ min: 1 }),
-    check('email', 'Please include a valid email').isEmail(),
-    check('address', 'Address is required').not().isEmpty(),
-    check('subscription', 'Subscription is required').isIn(['Basic', 'Prime', 'Elite']),
-], async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { name, age, email, address, subscription } = req.body;
-
+router.post('/submit', async (req, res) => {
     try {
-        const formData = new FormData({
+        const { name, age, email, address, subscription } = req.body;
+
+        // Validate request payload
+        if (!name || !age || !email || !address || !subscription) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        // Create new form data entry
+        const newFormData = new FormData({
             name,
             age,
             email,
@@ -27,10 +21,24 @@ router.post('/submit', [
             subscription
         });
 
-        await formData.save();
+        // Save form data to database
+        await newFormData.save();
+
         res.status(201).json({ message: 'Form submitted successfully!' });
-    } catch (err) {
-        next(err); // Pass errors to the error handler
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get all form data
+router.get('/data', async (req, res) => {
+    try {
+        const formData = await FormData.find();
+        res.json(formData);
+    } catch (error) {
+        console.error('Error fetching form data:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
